@@ -2,6 +2,7 @@ import { ErrorMassges, SuccessMassages } from "../const/message.js";
 import asyncHandler from "../handler/catchAsync.js";
 import ErrorResponse from "../handler/error.js";
 import itemModel from "../model/item-model.js";
+import mongoose from "mongoose";
 import saleModel from "../model/sale-model.js";
 
 //@desc Add new item in the list
@@ -54,7 +55,10 @@ export const removeItem = asyncHandler(async (req, res, next) => {
 		if (!itemId) {
 			return next(new ErrorResponse(ErrorMassges.MISSING_FIELDS, 400));
 		}
-		await itemModel.findByIdAndDelete({ _id: itemId });
+		const deleted = await itemModel.findByIdAndDelete({ _id: itemId });
+		if (!deleted) {
+			return next(new ErrorResponse("No Item Found", 404));
+		}
 
 		return res.status(204).json({
 			message: SuccessMassages.ITEM_REMOVE,
@@ -72,7 +76,11 @@ export const updateItem = asyncHandler(async (req, res, next) => {
 	const { itemId } = req.params;
 	const { itemName, quantity, price } = req.body;
 	try {
-		if (!itemName || !quantity || !price || !itemId) {
+		//check itemId is mongooes id  valid or not
+		if (!mongoose.Types.ObjectId.isValid(itemId)) {
+			return next(new ErrorResponse(ErrorMassges.INVALID_ID, 400));
+		}
+		if (!itemName || !quantity || !price) {
 			return next(new ErrorResponse(ErrorMassges.MISSING_FIELDS, 400));
 		}
 		const findAndUpdate = await itemModel.findByIdAndUpdate(
@@ -102,14 +110,15 @@ export const updateItem = asyncHandler(async (req, res, next) => {
 //Route post /v1/api/sales/add-sale
 
 export const addSale = asyncHandler(async (req, res, next) => {
-	const { description, amount } = req.body;
+	const { name, price, quantity } = req.body;
 	try {
-		if (!description || !amount) {
+		if (!name || !price || !quantity) {
 			return next(new ErrorResponse(ErrorMassges.MISSING_FIELDS, 400));
 		}
 		const newSale = new saleModel({
-			amount,
-			description,
+			name: name,
+			quantity: quantity,
+			price: price,
 		});
 		await newSale.save();
 		res.status(200).json({
@@ -117,5 +126,47 @@ export const addSale = asyncHandler(async (req, res, next) => {
 			success: true,
 			data: newSale,
 		});
-	} catch (error) {}
+	} catch (error) {
+		return next(new ErrorResponse(error.message, 500));
+	}
+});
+
+//@desc get all   sales
+//Route GET /v1/api/sales/sales
+
+export const getAllSales = asyncHandler(async (req, res, next) => {
+	try {
+		const result = await saleModel.find();
+		return res.status(200).json({
+			message: SuccessMassages.GETTED_DATA,
+			success: true,
+			data: result,
+		});
+	} catch (error) {
+		return next(new ErrorResponse(error.message, 500));
+	}
+});
+
+//@desc delete a sale from sales list
+//Route DELETE /v1/api/sales/:saleId
+
+export const removeSale = asyncHandler(async (req, res, next) => {
+	const { saleId } = req.params;
+	try {
+		if (!mongoose.Types.ObjectId.isValid(saleId)) {
+			return next(new ErrorResponse(ErrorMassges.INVALID_ID, 404));
+		}
+		const deleteed = await saleModel.findByIdAndDelete({ _id: saleId });
+		if (!deleteed) {
+			return next(new ErrorResponse(`No Sale with id ${saleId}`, 404));
+		}
+
+		return res.status(200).json({
+			message: SuccessMassages.ITEM_REMOVE,
+			success: true,
+			data: deleteed,
+		});
+	} catch (error) {
+		return next(new ErrorResponse("something went wrong", 500));
+	}
 });

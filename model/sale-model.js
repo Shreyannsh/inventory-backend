@@ -2,12 +2,16 @@ import mongoose from "mongoose";
 
 const saleSchema = new mongoose.Schema(
 	{
-		amount: {
+		name: {
+			type: String,
+			required: true,
+		},
+		quantity: {
 			type: Number,
 			required: true,
 		},
-		description: {
-			type: String,
+		price: {
+			type: Number,
 			required: true,
 		},
 	},

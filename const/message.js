@@ -1,5 +1,6 @@
 export const ErrorMassges = {
 	MISSING_FIELDS: "Missing Fields",
+	INVALID_ID: "No valid id",
 };
 
 export const SuccessMassages = {

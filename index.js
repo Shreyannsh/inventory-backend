@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import "./database/initial.db.js";
 import ItemRouter from "./routes/item-routes.js";
+import SaleRouter from "./routes/sale-route.js";
 
 const app = express();
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use("/v1/api", ItemRouter);
+app.use("/v1/api", SaleRouter);
 
 app.use("*", (req, res) => {
 	res.status(404).json({
