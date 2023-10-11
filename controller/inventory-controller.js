@@ -9,7 +9,7 @@ import saleModel from "../model/sale-model.js";
 //Route POST /v1/api/items/add-item
 
 export const AddItem = asyncHandler(async (req, res, next) => {
-	const { itemName, quantity, price } = req.body;
+	const { itemName, quantity, price, category } = req.body;
 	try {
 		if (!itemName || !quantity || !price) {
 			return next(new ErrorResponse(ErrorMassges.MISSING_FIELDS, 400));
@@ -18,6 +18,7 @@ export const AddItem = asyncHandler(async (req, res, next) => {
 			name: itemName,
 			quantity: quantity,
 			price: price,
+			category: category,
 		});
 		await newItems.save();
 		return res.status(200).json({
@@ -74,7 +75,7 @@ export const removeItem = asyncHandler(async (req, res, next) => {
 
 export const updateItem = asyncHandler(async (req, res, next) => {
 	const { itemId } = req.params;
-	const { itemName, quantity, price } = req.body;
+	const { itemName, quantity, price, category } = req.body;
 	try {
 		//check itemId is mongooes id  valid or not
 		if (!mongoose.Types.ObjectId.isValid(itemId)) {
@@ -90,6 +91,7 @@ export const updateItem = asyncHandler(async (req, res, next) => {
 					name: itemName,
 					quantity: quantity,
 					price: price,
+					category: category,
 				},
 			},
 			{
